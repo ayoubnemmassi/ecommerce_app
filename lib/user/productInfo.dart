@@ -24,9 +24,9 @@ class _ProductInfoState extends State<ProductInfo> {
           Container(
           height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: Image(
+            child: Image.network(
 
-                image: AssetImage(product.pLocation))),
+                product.pLocation)),
           Padding(
             padding:EdgeInsets.fromLTRB( 20,30,20, 0),
             child: Container(

@@ -1,12 +1,17 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/Widgets/custom_textfield.dart';
 import 'package:e_commerce/models/User.dart';
 import 'package:e_commerce/models/product.dart';
 import 'package:e_commerce/services/auth.dart';
+import 'package:e_commerce/user/test.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:e_commerce/services/store.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:path/path.dart';
 import '../../Constants.dart';
 import '../login_screen.dart';
 import 'addAdmin.dart';
@@ -23,7 +28,9 @@ class AddProduct extends StatefulWidget {
 
 class _AddProductState extends State<AddProduct> {
   final Store store =Store();
-
+  PickedFile _imageFile;
+  String imageUrl;
+  final ImagePicker Picker=ImagePicker();
   int _bottomBarIndex = 0;
 
   final _auth = Auth();
@@ -171,14 +178,15 @@ class _AddProductState extends State<AddProduct> {
                 SizedBox(height: height*.01,),
                 CustomTextField(onClick: (value){category=value;}, icon: null, hint: 'Product Category'),
                 SizedBox(height: height*.01,),
-                CustomTextField(onClick: (value){imagelocation=value;}, icon: null, hint: 'Product Location'),
+                //InkWell(onTap: (){  takePhoto() ;}, child: Icon(Icons.image)),
+                imagearticle(),
                 SizedBox(height: height*.02,),
                 RaisedButton(onPressed: ()
                 {
                   if(globalKey.currentState.validate())
                   {
                     globalKey.currentState.save();
-                    store.addProduct(Product(pName: name,pPrice :price,pDescription: description,pLocation :imagelocation,pCategory: category));
+                    store.addProduct(Product(pName: name,pPrice :price,pDescription: description,pLocation :imageUrl,pCategory: category));
                   }
                 },child: Text('Add Product'),)
               ],
@@ -188,7 +196,23 @@ class _AddProductState extends State<AddProduct> {
       ]),
     );
   }
-
+  Widget imagearticle()
+  {
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 80.0,
+            backgroundImage:_imageFile==null? AssetImage("images/noimage.jpg"):FileImage(File(_imageFile.path)),
+          ),
+          Positioned(bottom: 20.0,
+              right: 20.0,
+              child: InkWell(onTap: (){takePhoto();},
+                  child: Icon(Icons.camera_alt,color: Colors.teal,size: 28.0,)))
+        ],
+      ),
+    );
+  }
   Widget UsersImage() {
     return StreamBuilder<QuerySnapshot>(
       stream: store.loadUsers(),
@@ -217,5 +241,19 @@ class _AddProductState extends State<AddProduct> {
         }
       },
     );
+  }
+  void takePhoto() async{
+    final pickedFile=await Picker.getImage(source: ImageSource.gallery);
+    final storage =FirebaseStorage.instance;
+    var snapshot=await storage.ref().
+    child('folderName/${context.basename(pickedFile.path)}').
+    putFile(File(pickedFile.path));
+    var downloadedUrl=await snapshot.ref.getDownloadURL();
+    print(downloadedUrl);
+    setState(() {
+      _imageFile=pickedFile;
+      imageUrl=downloadedUrl;
+    });
+
   }
 }

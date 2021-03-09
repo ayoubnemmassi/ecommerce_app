@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/Constants.dart';
 import 'package:e_commerce/Widgets/custom_textfield.dart';
@@ -5,7 +7,10 @@ import 'package:e_commerce/models/User.dart';
 import 'package:e_commerce/models/product.dart';
 import 'package:e_commerce/services/auth.dart';
 import 'package:e_commerce/services/store.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../login_screen.dart';
@@ -27,6 +32,9 @@ class _EditProductState extends State<EditProduct> {
   int _bottomBarIndex = 0;
 
   final _auth = Auth();
+  PickedFile _imageFile;
+  String imageUrl;
+  final ImagePicker Picker=ImagePicker();
 
   List<User> _Users;
 
@@ -169,16 +177,32 @@ class _EditProductState extends State<EditProduct> {
                 SizedBox(height: height*.01,),
                 CustomTextField(initialvalue: product.pCategory,onClick: (value){category=value;}, icon: null, hint: 'Product Category'),
                 SizedBox(height: height*.01,),
-                CustomTextField(initialvalue: product.pLocation,onClick: (value){imagelocation=value;}, icon: null, hint: 'Product Location'),
+                imagearticle(product.pLocation),
+                //CustomTextField(initialvalue: product.pLocation,onClick: (value){imagelocation=value;}, icon: null, hint: 'Product Location'),
                 SizedBox(height: height*.02,),
-                RaisedButton(onPressed: ()
-                {
-                  if(globalKey.currentState.validate())
-                  {
-                    globalKey.currentState.save();
-                     store.editProduct({KProductsName:name,KProductsPrice:price,KProductsDescription:description,KProductsCategory:category,KProductsLocation:imagelocation}, product.pId);
-                  }
-                },child: Text('Edit Product'),)
+                ButtonTheme(
+
+                  child: Builder(
+                    builder:(context)=> RaisedButton(
+color: Colors.white70,
+                      onPressed: ()
+                      {
+                        if(globalKey.currentState.validate())
+                        {
+                          globalKey.currentState.save();
+                          if(imageUrl!=null){
+
+                            store.editProduct({KProductsName:name,KProductsPrice:price,KProductsDescription:description,KProductsCategory:category,KProductsLocation:imageUrl}, product.pId);
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              content:Text('product is edited') ,));
+                          } }
+                      },
+                      child: Text('Edit Product'.toUpperCase(),
+                        style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                    ),
+                  ),
+                ),
+
               ],
             ),
           ),
@@ -214,5 +238,37 @@ class _EditProductState extends State<EditProduct> {
         }
       },
     );
+  }
+  Widget imagearticle(String pLocation)
+  {
+    var location=pLocation;
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 80.0,
+            backgroundImage:imageUrl!=null? NetworkImage(imageUrl):NetworkImage(pLocation),
+          ),
+          Positioned(bottom: 20.0,
+              right: 20.0,
+              child: InkWell(onTap: (){takePhoto(); },
+                  child: Icon(Icons.camera_alt,color: Colors.teal,size: 28.0,)))
+        ],
+      ),
+    );
+  }
+  void takePhoto() async{
+    final pickedFile=await Picker.getImage(source: ImageSource.gallery);
+    final storage =FirebaseStorage.instance;
+    var snapshot=await storage.ref().
+    child('folderName/${context.basename(pickedFile.path)}').
+    putFile(File(pickedFile.path));
+    var downloadedUrl=await snapshot.ref.getDownloadURL();
+    print(downloadedUrl);
+    setState(() {
+      _imageFile=pickedFile;
+      imageUrl=downloadedUrl;
+    });
+
   }
 }

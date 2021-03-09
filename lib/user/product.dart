@@ -164,9 +164,9 @@ class _ProductPageState extends State<ProductPage> {
                 child: Stack(
                   children: <Widget>[
                     Positioned.fill(
-                      child: Image(
-                        fit: BoxFit.fill,
-                        image: AssetImage(products[index].pLocation),
+                      child: Image.network(
+
+                        products[index].pLocation,fit: BoxFit.fill,
                       ),
                     ),
                     Positioned(

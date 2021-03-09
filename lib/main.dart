@@ -17,6 +17,7 @@ import 'package:e_commerce/screens/signup_screen.dart';
 import 'package:e_commerce/user/cartScreen.dart';
 import 'package:e_commerce/user/product.dart';
 import 'package:e_commerce/user/productInfo.dart';
+import 'package:e_commerce/user/test.dart';
 import 'package:e_commerce/user/userHome.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
                   OrderDetails.id:(context)=>OrderDetails(),
                   ProductPage.id:(context)=>ProductPage(),
                   UsersInfo.id:(context)=>UsersInfo(),
+                  test.id:(context)=>test(),
                 },
               ),
             );

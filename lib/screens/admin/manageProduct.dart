@@ -177,7 +177,7 @@ class _ManageProductState extends State<ManageProduct> {
                           MyPopupMenuItem(onClick:(){Navigator.pushNamed(context, EditProduct.id,arguments: products[index]);} ,
                               child: Text('Edit')
                           ),
-                          MyPopupMenuItem(onClick: (){store.deleteProduct(products[index].pId);
+                            MyPopupMenuItem(onClick: (){store.deleteProduct(products[index].pId);
                           Navigator.pop(context);
                           },
                               child: Text('Delete')
@@ -188,9 +188,9 @@ class _ManageProductState extends State<ManageProduct> {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: Image(
-                          fit: BoxFit.fill,
-                          image:AssetImage(products[index].pLocation),
+                        child: Image.network(
+
+                          products[index].pLocation,fit: BoxFit.fill,
                         ),
                       ),
                       Positioned(

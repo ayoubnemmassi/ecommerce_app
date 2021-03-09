@@ -45,7 +45,7 @@ class CartScreen extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: screenHeight * .15 / 2,
-                                backgroundImage: AssetImage(
+                                backgroundImage: NetworkImage(
                                     products[index].pLocation),
                               ),
                               SizedBox(width: MediaQuery.of(context).size.width*.14,),

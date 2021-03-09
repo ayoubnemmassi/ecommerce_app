@@ -7,8 +7,8 @@ class Store {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 
-  addProduct(Product product) {
-    firestore.collection(KProductsCollection).add({
+   addProduct(Product product) {
+     firestore.collection(KProductsCollection).add({
       KProductsName: product.pName,
       KProductsDescription: product.pDescription,
       KProductsCategory: product.pCategory,

@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_commerce/Widgets/custom_textfield.dart';
 import 'package:e_commerce/models/User.dart';
 import 'package:e_commerce/models/product.dart';
 import 'package:e_commerce/services/auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:e_commerce/services/store.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Constants.dart';
@@ -29,7 +34,9 @@ class _AddAdminState extends State<AddAdmin> {
   int _bottomBarIndex = 0;
 
   List<User> _Users;
-
+  PickedFile _imageFile;
+  String imageUrl;
+  final ImagePicker Picker=ImagePicker();
   String fname,lname,email,password,imagelocation;
 
   final GlobalKey<FormState> globalKey=GlobalKey<FormState>();
@@ -173,7 +180,8 @@ class _AddAdminState extends State<AddAdmin> {
                 SizedBox(height: height*.01,),
                 CustomTextField(onClick: (value){password=value;}, icon: null, hint: 'Admin password'),
                 SizedBox(height: height*.01,),
-                CustomTextField(onClick: (value){imagelocation=value;}, icon: null, hint: 'image location'),
+               // CustomTextField(onClick: (value){imagelocation=value;}, icon: null, hint: 'image location'),
+                imagearticle(),
                 SizedBox(height: height*.02,),
                 RaisedButton(onPressed: ()
                 async {
@@ -181,7 +189,10 @@ class _AddAdminState extends State<AddAdmin> {
                   {
                     globalKey.currentState.save();
                     await auth.signUp(email.trim(), password.trim());
-                    store.addUser(User(uName: lname,uPrenom :fname,uMail: email,uMdp :password,uImage: imagelocation,uRole: 'admin'));
+                    if(imageUrl!=null){
+                    store.addUser(User(uName: lname,uPrenom :fname,uMail: email,uMdp :password,uImage: imageUrl,uRole: 'admin'));
+                  }
+                  else{store.addUser(User(uName: lname,uPrenom :fname,uMail: email,uMdp :password,uImage: 'images/admins.png',uRole: 'admin'));}
                   }
                 },child: Text('Add Admin'),)
               ],
@@ -190,6 +201,37 @@ class _AddAdminState extends State<AddAdmin> {
         ),
      ] ),
     );
+  }
+  Widget imagearticle()
+  {
+    return Center(
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 80.0,
+            backgroundImage:_imageFile==null? AssetImage("images/admins.png"):FileImage(File(_imageFile.path)),
+          ),
+          Positioned(bottom: 20.0,
+              right: 20.0,
+              child: InkWell(onTap: (){takePhoto();},
+                  child: Icon(Icons.camera_alt,color: Colors.teal,size: 28.0,)))
+        ],
+      ),
+    );
+  }
+  void takePhoto() async{
+    final pickedFile=await Picker.getImage(source: ImageSource.gallery);
+    final storage =FirebaseStorage.instance;
+    var snapshot=await storage.ref().
+    child('folderName/${context.basename(pickedFile.path)}').
+    putFile(File(pickedFile.path));
+    var downloadedUrl=await snapshot.ref.getDownloadURL();
+    print(downloadedUrl);
+    setState(() {
+      _imageFile=pickedFile;
+      imageUrl=downloadedUrl;
+    });
+
   }
   Widget UsersImage() {
     return StreamBuilder<QuerySnapshot>(
